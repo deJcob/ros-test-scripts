@@ -16,7 +16,7 @@ range3 = Range()
 start_pos = Odometry()
 inited = False
 distance_to_run = 0.1
-distance_to_stop = 0.15
+distance_to_stop = 0.18
 
 odom = Odometry()
 start_pos = Odometry()
@@ -66,25 +66,29 @@ def talker():
     rospy.Subscriber("/diff_drive/odom", Odometry, callback)
     rospy.Subscriber("/joint_states/", JointState, callbackJoints)
 
+    joint_states.velocity.append(0.1)
+    joint_states.velocity.append(0.1)
+
     pub = rospy.Publisher('/diff_drive/cmd_vel', Twist, queue_size=10)
     rate = rospy.Rate(100) # 100hz
 
     while not rospy.is_shutdown():
         cmd_vel = Twist()
         cmd_vel.linear.x = 0.0
+        
         print("0: ",range0, "1: ",range1, "2: ",range2, "3: ",range3)
 
         x = abs(start_pos.pose.pose.position.x - odom.pose.pose.position.x)
         y = abs(start_pos.pose.pose.position.y - odom.pose.pose.position.y)
         len = math.sqrt((x*x)+(y*y))
-
-        if not range0 < distance_to_stop:
+        
+        if range0 > distance_to_stop:
         # if not range1 < distance_to_stop:
         # if not range2 < distance_to_stop:
         # if not range3 < distance_to_stop:
             cmd_vel.linear.x = 0.4
         elif joint_states.velocity[0] != 0.0 or joint_states.velocity[1] != 0.0:
-            cmd_vel.linear.x = 0.0
+            cmd_vel.linear.x = -0.1
         else:
             print("x: ",start_pos.pose.pose.position.x - odom.pose.pose.position.x,
                 "y: ", start_pos.pose.pose.position.y - odom.pose.pose.position.y,
@@ -92,7 +96,7 @@ def talker():
                 "z: ", math.degrees(start_pos.pose.pose.orientation.z - odom.pose.pose.orientation.z))
             print(odom.pose.pose.position.x, odom.pose.pose.position.y)
             # cmd_vel.linear.x = -0.1
-            print("Reached distance 0:", range0)
+            print("////////////////////////////////////////Reached distance 0:", range0)
             # print("Reached distance 1:", range1)
             # print("Reached distance 2:", range2)
             # print("Reached distance 3:", range3)
